@@ -9,14 +9,17 @@ dates = datetime(data.Date, 'InputFormat', 'MM/yyyy'); % Adjust format as needed
 sugar = data.Sugar;
 corn = data.Corn;
 soybean = data.Soybean;
+pumpkin = data.Pumpkin_k;
 
 % Fill missing data (e.g., linear interpolation)
 sugar = fillmissing(sugar, 'linear');
 corn = fillmissing(corn, 'linear');
 soybean = fillmissing(soybean, 'linear');
+pumpkin = fillmissing(pumpkin, 'linear');
 
 % Normalize prices for modeling
 sugarWorldNorm = sugar / mean(sugar, 'omitnan');
+%to specify the 'omitnan' option for the nanflag input argument.
 
 
 % Example Parameters
@@ -40,12 +43,12 @@ production(1) = sugar(1);
 % Run Simulation
 for t = 2:T
     dY = 0.03; % Placeholder for GDP growth
-    consumption(t) = consumptionECM(dY, consumption(t-1), 1.02^t, sugarWorld(t), params);
-    production(t) = productionDynamics(sugarWorld, t, lags, coeffs);
+    consumption(t) = consumptionECM(dY, consumption(t-1), 1.02^t, sugar(t), params);
+    production(t) = productionDynamics(sugar, t, lags, coeffs);
 end
 
 % Forecast Prices
-P_forecast = forecastPrice(sugarWorld, [1, 1, 1]);
+P_forecast = forecastPrice(sugar, [1, 1, 1]);
 
 %for debugging
 disp(size(dates));
@@ -55,21 +58,26 @@ disp(class(consumption));
 disp(size(production));
 disp(class(production));
 
+% stop
+% ^ un-comment this interupter line to halt the script before it can 
+% graph the results, if you dont want it generating visuals with each
+% iteration
 
 figure;
 hold on;
-plot(dates, sugar, 'b', 'LineWidth', 1.5);
-plot(dates, corn, 'r', 'LineWidth', 1.5);
-plot(dates, soybean, 'g', 'LineWidth', 1.5);
+plot(dates+74, sugar, 'b', 'LineWidth', 1.5);
+plot(dates+74, corn, 'r', 'LineWidth', 1.5);
+plot(dates+74, soybean, 'g', 'LineWidth', 1.5);
+plot(dates+74, pumpkin, 'y', 'LineWidth', 1.5);
 
-%plot(dates, consumption, 'p', 'LineWidth', 1.5);
+plot(dates, consumption, 'm', 'LineWidth', 1.5);
 
 
-%plot(dates, production, 'y', 'LineWidth', 1.5);
+plot(dates, production, 'k', 'LineWidth', 1.5);
 %legend('Sugar Prices', 'Consumption',  'Production');
 
 
-legend('Sugar Price', 'Corn Prices', 'Soybean Prices','production');
+legend('Sugar Price', 'Corn Prices', 'Soybean Prices','Pumpkin Prices','consumption','production');
 
 xlabel('Time');
 ylabel('Normalized Values');
